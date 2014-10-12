@@ -35,6 +35,9 @@ public class OggFile extends Common {
 	public HashMap getTags(RandomAccessFile s) throws IOException {
 		long offset = 0;
 		int  retry  = 64;
+		boolean need_tags = true;
+		boolean need_id = true;
+
 		HashMap tags = new HashMap();
 		HashMap identification = new HashMap();
 		
@@ -42,11 +45,15 @@ public class OggFile extends Common {
 			long res[] = parse_ogg_page(s, offset);
 			if(res[2] == OGG_TYPE_IDENTIFICATION) {
 				identification = parse_ogg_vorbis_identification(s, offset+res[0], res[1]);
+				need_id = false;
 			} else if(res[2] == OGG_TYPE_COMMENT) {
 				tags = parse_ogg_vorbis_comment(s, offset+res[0], res[1]);
-				break;
+				need_tags = false;
 			}
 			offset += res[0] + res[1];
+			if (need_tags == false && need_id == false) {
+				break;
+			}
 		}
 
 		// Calculate duration in seconds
