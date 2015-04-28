@@ -114,7 +114,7 @@ public class FlacFile extends Common {
 			id_hash.put("num_samples",       b2be32(buff, 14)); // fixme: this is actually 36 bit: the 4 hi bits are discarded due to java
 			if((Integer)id_hash.get("sampling_rate") > 0) {
 				int duration = (Integer)id_hash.get("num_samples") / (Integer)id_hash.get("sampling_rate");
-				id_hash.put("duration", duration);
+				id_hash.put("duration", (int)duration);
 			}
 		}
 		return id_hash;

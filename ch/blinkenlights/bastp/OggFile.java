@@ -63,7 +63,7 @@ public class OggFile extends Common {
 			int br_nom = (Integer)identification.get("bitrate_nominal") / 8;
 			long file_length = s.length();
 			if (file_length > 0 && br_nom > 0) {
-				tags.put("duration", (file_length/br_nom));
+				tags.put("duration", (int)(file_length/br_nom));
 			}
 		}
 
