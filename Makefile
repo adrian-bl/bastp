@@ -14,4 +14,4 @@ test:
 	@date
 
 xtest:
-	find /scratch/music/ -type f |grep -i mp3| java ch.blinkenlights.bastp.Test
+	find t -type f | sort | grep -i mp3| java ch.blinkenlights.bastp.Test
