@@ -23,6 +23,8 @@ import java.util.HashMap;
 
 
 public class OpusFile extends OggFile {
+	// A list of tags we are going to ignore in the OpusTags section
+	public static final String[] FORBIDDEN_TAGS = {"REPLAYGAIN_TRACK_GAIN", "REPLAYGAIN_TRACK_PEAK", "REPLAYGAIN_ALBUM_GAIN", "REPLAYGAIN_ALBUM_PEAK"};
 
 	public OpusFile() {
 	}
@@ -45,9 +47,30 @@ public class OpusFile extends OggFile {
 			// Get next page: The spec requires this to be an OpusTags head
 			offsets = parse_ogg_page(s, pos);
 			tags = parse_opus_vorbis_comment(s, pos+offsets[0], offsets[1]);
+			// ...and merge replay gain intos into the tags map
+			calculate_gain(opus_head, tags);
 		}
 
 		return tags;
+	}
+
+	/**
+	 * Adds replay gain information to the tags hash map
+	 */
+	private void calculate_gain(HashMap header, HashMap tags) {
+		// Remove any unacceptable tags (Opus files must not have
+		// their own REPLAYGAIN_* fields)
+		for(String k : FORBIDDEN_TAGS) {
+			tags.remove(k);
+		}
+		// Include the gain value found in the opus header
+		int header_gain = (int)header.get("header_gain");
+		addTagEntry(tags, "opus_header_gain", ""+header_gain);
+
+		// ..and add an REPLAYGAIN_ style correction tag
+		// (not so sure about this: will androids decoder start to do this on its own?)
+		double flac_gain = -1*(double)header_gain/256.0;
+		addTagEntry(tags, "REPLAYGAIN_TRACK_GAIN", String.format("%.2f dB", flac_gain));
 	}
 
 
@@ -77,7 +100,7 @@ public class OpusFile extends OggFile {
 				id_hash.put("channels"     , b2u(buff[9]));
 				id_hash.put("pre_skip"     , b2le16(buff, 10));
 				id_hash.put("sampling_rate", b2le32(buff, 12));
-				id_hash.put("q78OG"        , b2le16(buff, 16));
+				id_hash.put("header_gain"  , (int)((short)b2le16(buff, 16)));
 				id_hash.put("channel_map"  , b2u(buff[18]));
 			}
 		}
