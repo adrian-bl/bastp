@@ -64,13 +64,8 @@ public class OpusFile extends OggFile {
 			tags.remove(k);
 		}
 		// Include the gain value found in the opus header
-		int header_gain = (int)header.get("header_gain");
-		addTagEntry(tags, "opus_header_gain", ""+header_gain);
-
-		// ..and add an REPLAYGAIN_ style correction tag
-		// (not so sure about this: will androids decoder start to do this on its own?)
-		double flac_gain = -1*(double)header_gain/256.0;
-		addTagEntry(tags, "REPLAYGAIN_TRACK_GAIN", String.format("%.2f dB", flac_gain));
+		int header_gain = (Integer)header.get("header_gain");
+		addTagEntry(tags, "R128_BASTP_BASE_GAIN", ""+header_gain);
 	}
 
 
