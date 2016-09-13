@@ -46,16 +46,17 @@ public class Bastp {
 	
 	public HashMap getTags(RandomAccessFile s) {
 		HashMap tags = new HashMap();
-		byte[] file_ff = new byte[4];
+		byte[] file_ff = new byte[8];
 		
 		try {
 			s.read(file_ff);
+			s.seek(4);
 			String magic = new String(file_ff);
-			if(magic.equals("fLaC")) {
+			if(magic.substring(0,4).equals("fLaC")) {
 				tags = (new FlacFile()).getTags(s);
 				tags.put("type", "FLAC");
 			}
-			else if(magic.equals("OggS")) {
+			else if(magic.substring(0,4).equals("OggS")) {
 				// This may be an Opus OR an Ogg Vorbis file
 				tags = (new OpusFile()).getTags(s);
 				if (tags.size() > 0) {
@@ -80,6 +81,10 @@ public class Bastp {
 					inheritTag("duration", lameInfo, tags);
 				}
 				tags.put("type", "MP3/ID3v2");
+			}
+			else if(magic.substring(4,8).equals("ftyp")) {
+				tags = (new Mp4File()).getTags(s);
+				tags.put("type", "MP4");
 			}
 
 		}
