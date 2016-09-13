@@ -48,19 +48,19 @@ public class Test {
 				HashMap tags = (new Bastp()).getTags(s);
 				final Enumeration<String> e = Collections.enumeration(tags.keySet());
 				
-				if(! tags.containsKey("_magic")) {
+				if(! tags.containsKey("type")) {
 					cnt_broken++;
 				}
-				else if(tags.get("_magic").equals("fLaC")) {
+				else if(tags.get("type").equals("FLAC")) {
 					cnt_flac++;
 				}
-				else if(tags.get("_magic").equals("OggS")) {
+				else if(tags.get("type").equals("OGG") || tags.get("type").equals("OPUS")) {
 					cnt_ogg++;
 				}
-				else if(tags.get("_magic").equals("ID3\03")) {
+				else if(tags.get("type").equals("MP3/Lame")) {
 					cnt_id3v2++;
 				}
-				else if(tags.get("_magic").equals("ID3\04")) {
+				else if(tags.get("type").equals("MP3/ID3v2")) {
 					cnt_id3v2++;
 				}
 				else {
