@@ -107,7 +107,7 @@ public class Mp4File extends Common {
           if (tagName.equals("replaygain_track_gain") ||
               tagName.equals("replaygain_album_gain"))
           {
-            tags.put(tagName.toUpperCase(), tagValue);
+            addTagEntry(tags, tagName.toUpperCase(), tagValue);
             tagName = null;
           }
         }
