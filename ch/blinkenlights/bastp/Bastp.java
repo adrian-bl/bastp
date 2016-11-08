@@ -46,11 +46,10 @@ public class Bastp {
 	
 	public HashMap getTags(RandomAccessFile s) {
 		HashMap tags = new HashMap();
-		byte[] file_ff = new byte[8];
+		byte[] file_ff = new byte[12];
 		
 		try {
 			s.read(file_ff);
-			s.seek(4);
 			String magic = new String(file_ff);
 			if(magic.substring(0,4).equals("fLaC")) {
 				tags = (new FlacFile()).getTags(s);
@@ -82,7 +81,13 @@ public class Bastp {
 				}
 				tags.put("type", "MP3/ID3v2");
 			}
-			else if(magic.substring(4,8).equals("ftyp")) {
+			else if(magic.substring(4,8).equals("ftyp") && (
+				// see http://www.ftyps.com/ for all MP4 subtypes
+				magic.substring(8,11).equals("M4A") ||  // Apple audio
+				magic.substring(8,11).equals("M4V") ||  // Apple video
+				magic.substring(8,12).equals("mp42") || // generic MP4, e.g. FAAC
+				magic.substring(8,12).equals("isom")    // generic MP4, e.g. ffmpeg
+			)) {
 				tags = (new Mp4File()).getTags(s);
 				tags.put("type", "MP4");
 			}
