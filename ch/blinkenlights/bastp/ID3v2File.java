@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Adrian Ulrich <adrian@blinkenlights.ch>
+ * Copyright (C) 2013-2016 Adrian Ulrich <adrian@blinkenlights.ch>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,10 +25,10 @@ import java.util.Enumeration;
 
 
 public class ID3v2File extends Common {
-	private static int ID3_ENC_LATIN   = 0x00;
-	private static int ID3_ENC_UTF16LE = 0x01;
-	private static int ID3_ENC_UTF16BE = 0x02;
-	private static int ID3_ENC_UTF8    = 0x03;
+	private static final int ID3_ENC_LATIN   = 0x00;
+	private static final int ID3_ENC_UTF16   = 0x01;
+	private static final int ID3_ENC_UTF16BE = 0x02;
+	private static final int ID3_ENC_UTF8    = 0x03;
 	
 	public ID3v2File() {
 	}
@@ -140,17 +140,25 @@ public class ID3v2File extends Common {
 		int len   = raw.length;
 		String v  = "";
 		try {
-			if(encid == ID3_ENC_LATIN) {
-				v = new String(raw, 1, len-1, "ISO-8859-1");
+			switch (encid) {
+				case ID3_ENC_LATIN:
+					v = new String(raw, 1, len-1, "ISO-8859-1");
+					break;
+				case ID3_ENC_UTF8:
+					v = new String(raw, 1, len-1, "UTF-8");
+					break;
+				case ID3_ENC_UTF16BE:
+					v = new String(raw, 3, len-3, "UTF-16BE");
+					break;
+				case ID3_ENC_UTF16:
+					v = new String(raw, 1, len-1, "UTF-16");
+					break;
+				default:
+					// unhandled
 			}
-			else if (encid == ID3_ENC_UTF8) {
-				v = new String(raw, 1, len-1, "UTF-8");
-			}
-			else if (encid == ID3_ENC_UTF16LE) {
-				v = new String(raw, 3, len-3, "UTF-16LE");
-			}
-			else if (encid == ID3_ENC_UTF16BE) {
-				v = new String(raw, 3, len-3, "UTF-16BE");
+			if (v.length() > 0 && v.substring(v.length()-1).equals("\0")) {
+				// SOME tag writers seem to null terminate strings, some don't...
+				v = v.substring(0, v.length()-1);
 			}
 		} catch(Exception e) {}
 		return v;
