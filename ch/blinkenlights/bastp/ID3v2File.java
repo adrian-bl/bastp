@@ -137,31 +137,46 @@ public class ID3v2File extends Common {
 	/* Converts a raw byte-stream text into a java String */
 	private String getDecodedString(byte[] raw) {
 		int encid = raw[0] & 0xFF;
-		int len   = raw.length;
-		String v  = "";
+		int skip  = 1;
+		String cs = "ISO-8859-1";
+		String rv  = "";
 		try {
 			switch (encid) {
-				case ID3_ENC_LATIN:
-					v = new String(raw, 1, len-1, "ISO-8859-1");
-					break;
 				case ID3_ENC_UTF8:
-					v = new String(raw, 1, len-1, "UTF-8");
+					cs = "UTF-8";
 					break;
 				case ID3_ENC_UTF16BE:
-					v = new String(raw, 3, len-3, "UTF-16BE");
+					cs = "UTF-16BE";
+					skip = 3;
 					break;
 				case ID3_ENC_UTF16:
-					v = new String(raw, 1, len-1, "UTF-16");
+					cs = "UTF-16";
+					if (raw.length > 4) {
+						if ((raw[1]&0xFF) == 0xFE && (raw[2]&0XFF) == 0xFF && (raw[3]&0xFF) == 0x00 && (raw[4]&0xFF) == 0x00) {
+							// buggy tag written by lame?!
+							raw[3] = raw[2];
+							raw[4] = raw[1];
+							skip = 3;
+						} else if((raw[1]&0xFF) == 0xFF && (raw[2]&0XFF) == 0x00 && (raw[3]&0xFF) == 0xFE) {
+							// ?!, but seen in the wild
+							raw[2] = raw[1];
+							skip = 2;
+						}
+					}
 					break;
+				case ID3_ENC_LATIN:
 				default:
-					// unhandled
+					// uses defaults
 			}
-			if (v.length() > 0 && v.substring(v.length()-1).equals("\0")) {
+
+			rv = new String(raw, skip, raw.length-skip, cs);
+
+			if (rv.length() > 0 && rv.substring(rv.length()-1).equals("\0")) {
 				// SOME tag writers seem to null terminate strings, some don't...
-				v = v.substring(0, v.length()-1);
+				rv = rv.substring(0, rv.length()-1);
 			}
 		} catch(Exception e) {}
-		return v;
+		return rv;
 	}
 	
 }
